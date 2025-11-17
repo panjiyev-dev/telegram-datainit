@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Telegram WebApp Test</title>
+
+    <!-- Telegram JS SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0d1117;
+            color: #fff;
+            padding: 20px;
+        }
+        pre {
+            background: #161b22;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+        }
+        button {
+            padding: 10px 15px;
+            background: #2583ff;
+            border: none;
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 15px;
+        }
+        button:active {
+            opacity: 0.8;
+        }
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .profile img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .profile div {
+            display: flex;
+            flex-direction: column;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="profile">
+        <img id="userPhoto" src="" alt="Logo">
+        <div>
+            <h1 id="userName">name</h1>
+            <p id="userUsername">username</p>
+        </div>
+    </div>
+
+    <h2>🔐 Telegram WebApp initData</h2>
+    <pre id="output">Yuklanmoqda...</pre>
+
+    <button id="copyBtn">📋 Nusxa olish</button>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+
+            const output = document.getElementById('output');
+            const userPhoto = document.getElementById('userPhoto');
+            const userName = document.getElementById('userName');
+            const userUsername = document.getElementById('userUsername');
+
+            // ⚡ initDataUnsafe — foydalanuvchi haqida barcha ma'lumotlar
+            const initData = Telegram.WebApp.initDataUnsafe || {};
+
+            // Agar foydalanuvchi ma’lumotlari mavjud bo‘lsa
+            if (initData.user) {
+                const user = initData.user;
+                userPhoto.src = user.photo_url || "https://via.placeholder.com/50";
+                userName.textContent = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+                userUsername.textContent = user.username ? "@" + user.username : "(username mavjud emas)";
+            } else {
+                userPhoto.src = "https://via.placeholder.com/50";
+                userName.textContent = "Foydalanuvchi topilmadi";
+                userUsername.textContent = "";
+            }
+
+            // JSON formatda chiroyli qilib chiqarish
+            const formatted = JSON.stringify(initData, null, 2);
+            output.textContent = formatted;
+
+            // 📋 Copy tugmasi
+            const copyBtn = document.getElementById('copyBtn');
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(formatted)
+                    .then(() => {
+                        copyBtn.textContent = "✅ Nusxa olindi!";
+                        setTimeout(() => copyBtn.textContent = "📋 Nusxa olish", 2000);
+                    })
+                    .catch(err => {
+                        alert("❌ Nusxa olishda xatolik: " + err);
+                    });
+            });
+        });
+    </script>
+
+</body>
+</html>
