@@ -2,7 +2,7 @@ import asyncio
 import os
 import json
 from aiogram import Bot, Dispatcher, types
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 from aiogram.filters import Command
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -11,7 +11,6 @@ from firebase_admin import credentials, firestore
 API_TOKEN = '8369431718:AAGcq9txjvE5PK0YFmuKUrr-iNHvEc65Xy4'
 
 # === FIREBASE ===
-# Environment variable dan JSON stringni o'qish
 service_account_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
 if not service_account_json:
     raise RuntimeError("❌ Environment variable FIREBASE_SERVICE_ACCOUNT topilmadi!")
@@ -39,7 +38,6 @@ async def start_handler(message: types.Message):
         ],
         resize_keyboard=True
     )
-
     await message.answer(
         "Botdan foydalanish uchun telefon raqamingizni yuboring 👇",
         reply_markup=keyboard
@@ -57,12 +55,19 @@ async def contact_handler(message: types.Message):
         "phone": phone
     })
 
-    # Mini app linkini yuborish
+    # Mini appni Telegram ichida ochish uchun inline keyboard
     mini_app_url = "https://stirring-sunflower-b75418.netlify.app/"
+    web_app = WebAppInfo(url=mini_app_url)
+    inline_kb = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text="🚀 Ilovani ochish", web_app=web_app)]
+        ]
+    )
+
     await message.answer(
-        f"✅ Ma'lumotlaringiz saqlandi!\n\n"
-        f"Endi ilovamizni ochishingiz mumkin mini app sifatida:\n"
-        f"{mini_app_url}"
+        "✅ Ma'lumotlaringiz saqlandi!\n\n"
+        "Endi ilovamizni Telegram ichida ochishingiz mumkin:",
+        reply_markup=inline_kb
     )
 
 # Qo‘lda yozilgan raqamlarni rad qilish
