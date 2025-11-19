@@ -7,6 +7,7 @@ from aiogram.filters import Command
 import firebase_admin
 from firebase_admin import credentials, firestore
 
+# === BOT TOKEN ===
 API_TOKEN = '8369431718:AAGcq9txjvE5PK0YFmuKUrr-iNHvEc65Xy4'
 
 # === FIREBASE ===
@@ -16,7 +17,6 @@ if not service_account_json:
     raise RuntimeError("❌ Environment variable FIREBASE_SERVICE_ACCOUNT topilmadi!")
 
 service_account_info = json.loads(service_account_json)
-
 cred = credentials.Certificate(service_account_info)
 firebase_admin.initialize_app(cred)
 db = firestore.client()
@@ -57,10 +57,12 @@ async def contact_handler(message: types.Message):
         "phone": phone
     })
 
+    # Mini app linkini yuborish
+    mini_app_url = "https://stirring-sunflower-b75418.netlify.app/"
     await message.answer(
-        f"Rahmat! Ma'lumotlar saqlandi:\n"
-        f"ID: {user_id}\n"
-        f"Telefon: {phone}"
+        f"✅ Ma'lumotlaringiz saqlandi!\n\n"
+        f"Endi ilovamizni ochishingiz mumkin mini app sifatida:\n"
+        f"{mini_app_url}"
     )
 
 # Qo‘lda yozilgan raqamlarni rad qilish
