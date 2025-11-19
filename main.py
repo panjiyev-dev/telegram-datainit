@@ -8,7 +8,7 @@ from firebase_admin import credentials, firestore
 API_TOKEN = '8369431718:AAGcq9txjvE5PK0YFmuKUrr-iNHvEc65Xy4'
 
 # === FIREBASE ===
-cred = credentials.Certificate("serviceAccountKey.json")  # Firebase JSON
+cred = credentials.Certificate("FIREBASE_SERVICE_ACCOUNT")  # Firebase JSON
 firebase_admin.initialize_app(cred)
 db = firestore.client()
 
