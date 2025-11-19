@@ -27,18 +27,22 @@ async def start_handler(message: types.Message):
         reply_markup=keyboard
     )
 
-# Faqat contact yuborilgan xabarlar uchun filter
+# ✅ Faqat kontakt yuborilgan holatda ishlaydi
 @dp.message(lambda msg: msg.contact is not None)
 async def contact_handler(message: types.Message):
-    contact = message.contact
+    phone = message.contact.phone_number
     user_id = message.from_user.id
-    phone_number = contact.phone_number
 
     await message.answer(
         f"Rahmat! Sizning ma'lumotlaringiz:\n"
-        f"Foydalanuvchi ID: {user_id}\n"
-        f"Telefon raqam: {phone_number}"
+        f"ID: {user_id}\n"
+        f"Telefon raqam: {phone}"
     )
+
+# ❌ Agar user qo‘lda raqam yuborsa → rad qilamiz
+@dp.message(lambda msg: msg.text is not None and msg.contact is None)
+async def reject_text(message: types.Message):
+    await message.answer("Iltimos, raqamni qo‘lda yozmang. Pastdagi tugma orqali yuboring 👇")
 
 async def main():
     await dp.start_polling(bot)
