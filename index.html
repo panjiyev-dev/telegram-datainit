@@ -1,26 +1,97 @@
 <!DOCTYPE html>
 <html lang="uz">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Telegram WebApp Test</title>
+    <title>Profil Sahifasi</title>
 
-    <!-- Telegram JS SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Firebase Web SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+        // TODO: replace with your Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDVZ8UG4GJtrtbiv6dQqxMdZwZHf84XPHs",
+            authDomain: "exemple-initdata-tg.firebaseapp.com",
+            projectId: "exemple-initdata-tg",
+            storageBucket: "exemple-initdata-tg.firebasestorage.app",
+            messagingSenderId: "1091408606210",
+            appId: "1:1091408606210:web:93bb427cca8c616962a31b",
+            measurementId: "G-4P9ZHGDH7C"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.firebaseDB = db; // globally access in other scripts
+    </script>
 
     <style>
         body {
             font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        body.light {
+            background: #f5f5f5;
+            color: #111;
+        }
+
+        body.dark {
             background: #0d1117;
             color: #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
             padding: 20px;
         }
-        pre {
-            background: #161b22;
-            padding: 15px;
-            border-radius: 6px;
-            overflow-x: auto;
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
         }
+
+        .profile img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .profile div h1 {
+            margin: 0;
+            font-size: 22px;
+        }
+
+        .profile div p {
+            margin: 2px 0;
+            font-size: 16px;
+        }
+
+        section {
+            margin-top: 30px;
+        }
+
+        h2 {
+            margin-bottom: 10px;
+        }
+
+        .dark-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
         button {
             padding: 10px 15px;
             background: #2583ff;
@@ -30,84 +101,108 @@
             cursor: pointer;
             font-size: 15px;
         }
+
         button:active {
             opacity: 0.8;
         }
-        .profile {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
+
+        ul {
+            list-style: none;
+            padding-left: 0;
         }
-        .profile img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-        .profile div {
-            display: flex;
-            flex-direction: column;
+
+        ul li {
+            padding: 5px 0;
+            border-bottom: 1px solid gray;
         }
     </style>
 </head>
 
-<body>
+<body class="light">
+    <div class="container">
+        <!-- Profil bo‘limi -->
+        <div class="profile">
+            <img id="userPhoto" src="https://via.placeholder.com/80" alt="Foto">
+            <div>
+                <h1 id="userName">Loading...</h1>
+                <p id="userUsername"></p>
+                <p id="userPhone"></p>
+            </div>
+        </div>
 
-    <div class="profile">
-        <img id="userPhoto" src="" alt="Logo">
-        <div>
-            <h1 id="userName">name</h1>
-            <p id="userUsername">username</p>
+        <!-- Buyurtmalar Tarixi -->
+        <section>
+            <h2>📜 Buyurtmalar Tarixi</h2>
+            <ul id="orderHistory">
+                <li>Yuklanmoqda...</li>
+            </ul>
+        </section>
+
+        <!-- Yordam bo‘limi -->
+        <section>
+            <h2>🆘 Yordam</h2>
+            <p>Har qanday savol bo‘lsa, biz bilan bog‘laning: support@example.com</p>
+        </section>
+
+        <!-- Dark / Light Mode -->
+        <div class="dark-toggle">
+            <input type="checkbox" id="themeToggle">
+            <label for="themeToggle">🌙 Dark Mode</label>
         </div>
     </div>
 
-    <h2>🔐 Telegram WebApp initData</h2>
-    <pre id="output">Yuklanmoqda...</pre>
+    <script type="module">
+        import { doc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    <button id="copyBtn">📋 Nusxa olish</button>
+        const db = window.firebaseDB;
 
-    <script>
-        window.addEventListener('DOMContentLoaded', () => {
+        async function initProfile() {
+            const userId = Telegram.WebApp.initDataUnsafe?.user?.id;
+            if (!userId) return;
 
-            const output = document.getElementById('output');
-            const userPhoto = document.getElementById('userPhoto');
-            const userName = document.getElementById('userName');
-            const userUsername = document.getElementById('userUsername');
-
-            // ⚡ initDataUnsafe — foydalanuvchi haqida barcha ma'lumotlar
-            const initData = Telegram.WebApp.initDataUnsafe || {};
-
-            // Agar foydalanuvchi ma’lumotlari mavjud bo‘lsa
-            if (initData.user) {
-                const user = initData.user;
-                userPhoto.src = user.photo_url || "https://via.placeholder.com/50";
-                userName.textContent = `${user.first_name || ""} ${user.last_name || ""}`.trim();
-                userUsername.textContent = user.username ? "@" + user.username : "(username mavjud emas)";
-            } else {
-                userPhoto.src = "https://via.placeholder.com/50";
-                userName.textContent = "Foydalanuvchi topilmadi";
-                userUsername.textContent = "";
+            // Firestore dan telefon va boshqa info olish
+            const userDoc = await getDoc(doc(db, "users", userId.toString()));
+            let phone = "(telefon topilmadi)";
+            if (userDoc.exists()) {
+                phone = userDoc.data().phone || phone;
             }
 
-            // JSON formatda chiroyli qilib chiqarish
-            const formatted = JSON.stringify(initData, null, 2);
-            output.textContent = formatted;
+            // Telegram info
+            const user = Telegram.WebApp.initDataUnsafe.user || {};
+            document.getElementById("userPhoto").src = user.photo_url || "https://via.placeholder.com/80";
+            document.getElementById("userName").textContent = `${user.first_name || ""} ${user.last_name || ""}`.trim();
+            document.getElementById("userUsername").textContent = user.username ? "@" + user.username : "(username mavjud emas)";
+            document.getElementById("userPhone").textContent = "📱 " + phone;
 
-            // 📋 Copy tugmasi
-            const copyBtn = document.getElementById('copyBtn');
-            copyBtn.addEventListener('click', () => {
-                navigator.clipboard.writeText(formatted)
-                    .then(() => {
-                        copyBtn.textContent = "✅ Nusxa olindi!";
-                        setTimeout(() => copyBtn.textContent = "📋 Nusxa olish", 2000);
-                    })
-                    .catch(err => {
-                        alert("❌ Nusxa olishda xatolik: " + err);
-                    });
+            // Buyurtmalar tarixi (misol)
+            const ordersCol = collection(db, "orders");
+            const ordersSnap = await getDocs(ordersCol);
+            const ordersList = document.getElementById("orderHistory");
+            ordersList.innerHTML = "";
+            ordersSnap.forEach(doc => {
+                const li = document.createElement("li");
+                li.textContent = `Order #${doc.id}: ${doc.data().item || "Mahsulot"} - ${doc.data().status || "Holati noma'lum"}`;
+                ordersList.appendChild(li);
             });
+        }
+
+        initProfile();
+
+        // Dark / Light Mode
+        const toggle = document.getElementById("themeToggle");
+        toggle.addEventListener("change", () => {
+            if (toggle.checked) {
+                document.body.classList.remove("light");
+                document.body.classList.add("dark");
+            } else {
+                document.body.classList.remove("dark");
+                document.body.classList.add("light");
+            }
         });
     </script>
 
+    <!-- Telegram JS SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </body>
+
 </html>
